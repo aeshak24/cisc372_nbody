@@ -10,17 +10,23 @@
 // represents the objects in the system.  Global variables
 vector3 *hVel, *d_hVel;
 vector3 *hPos, *d_hPos;
+vector3 *d_values, d_accels, *d_sum;
+double *d_mass;
 double *mass;
-
+vector3 *values;
+vector3 **accels;
 //initHostMemory: Create storage for numObjects entities in our system
 //Parameters: numObjects: number of objects to allocate
 //Returns: None
 //Side Effects: Allocates memory in the hVel, hPos, and mass global variables
 void initHostMemory(int numObjects)
 {
-	hVel = (vector3 *)malloc(sizeof(vector3) * numObjects);
-	hPos = (vector3 *)malloc(sizeof(vector3) * numObjects);
-	mass = (double *)malloc(sizeof(double) * numObjects);
+	//hVel = (vector3 *)malloc(sizeof(vector3) * numObjects);
+	cudaMallocManaged(&hVel,sizeof(vector3)*numObjects);
+	//hPos = (vector3 *)malloc(sizeof(vector3) * numObjects);
+	cudaMallocManaged(&hPos,sizeof(vector3)*numObjects);
+	//mass = (double *)malloc(sizeof(double) * numObjects);
+	cudaMallocManaged(&mass,sizeof(vector3)*numObjects);
 }
 
 //freeHostMemory: Free storage allocated by a previous call to initHostMemory
@@ -91,6 +97,10 @@ void printSystem(FILE* handle){
 
 int main(int argc, char **argv)
 {
+vector3* values=(vector3*)cudaMallocManage(sizeof(vector3)*NUMENTITIES*NUMENTITIES);
+        vector3** accels=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
+        for (i=0;i<NUMENTITIES;i++)
+                accels[i]=&values[i*NUMENTITIES];
 	clock_t t0=clock();
 	int t_now;
 	//srand(time(NULL));
@@ -102,6 +112,10 @@ int main(int argc, char **argv)
 	#ifdef DEBUG
 	printSystem(stdout);
 	#endif
+	cudaMallocManaged(&values, sizeof(vector3)*NUMENTITIES*NUMENTITIES);
+       cudaMallocManaged(&accels,sizeof(vector3*)*NUMENTITIES);
+        for (i=0;i<NUMENTITIES;i++)
+                accels[i]=&values[i*NUMENTITIES];
 	for (t_now=0;t_now<DURATION;t_now+=INTERVAL){
 		compute();
 	}
@@ -110,6 +124,8 @@ int main(int argc, char **argv)
 	printSystem(stdout);
 #endif
 	printf("This took a total time of %f seconds\n",(double)t1/CLOCKS_PER_SEC);
-
+	cudaFree(values);
+	cudaFree(accels);
 	freeHostMemory();
+
 }
