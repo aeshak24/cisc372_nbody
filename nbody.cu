@@ -8,10 +8,10 @@
 #include "compute.h"
 
 // represents the objects in the system.  Global variables
-vector3 *hVel, *d_hVel;
-vector3 *hPos, *d_hPos;
-vector3 *d_values, d_accels, *d_sum;
-double *d_mass;
+vector3 *hVel;//, *d_hVel;
+vector3 *hPos;//, *d_hPos;
+//vector3 *d_values, d_accels, *d_sum;
+//double *d_mass;
 double *mass;
 vector3 *values;
 vector3 **accels;
@@ -26,7 +26,7 @@ void initHostMemory(int numObjects)
 	//hPos = (vector3 *)malloc(sizeof(vector3) * numObjects);
 	cudaMallocManaged(&hPos,sizeof(vector3)*numObjects);
 	//mass = (double *)malloc(sizeof(double) * numObjects);
-	cudaMallocManaged(&mass,sizeof(vector3)*numObjects);
+	cudaMallocManaged(&mass,sizeof(double)*numObjects);
 }
 
 //freeHostMemory: Free storage allocated by a previous call to initHostMemory
@@ -64,7 +64,7 @@ void planetFill(){
 //Side Effects: Fills count entries in our system starting at index start (0 based)
 void randomFill(int start, int count)
 {
-	int i, j, c = start;
+	int i, j ;
 	for (i = start; i < start + count; i++)
 	{
 		for (j = 0; j < 3; j++)
@@ -97,10 +97,13 @@ void printSystem(FILE* handle){
 
 int main(int argc, char **argv)
 {
-vector3* values=(vector3*)cudaMallocManage(sizeof(vector3)*NUMENTITIES*NUMENTITIES);
-        vector3** accels=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
-        for (i=0;i<NUMENTITIES;i++)
-                accels[i]=&values[i*NUMENTITIES];
+	cudaMallocManaged(&values,sizeof(vector3)*NUMENTITIES*NUMENTITIES);
+        vector3** accelstmp=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
+        for (int i=0;i<NUMENTITIES;i++)
+                accelstmp[i]=&values[i*NUMENTITIES];
+	cudaMalloc(&accels,sizeof(vector3*)*NUMENTITIES);
+	cudaMemcpy(&accels,accelstmp,sizeof(vector3*)*NUMENTITIES,cudaMemcpyHostToDevice);
+	free(accelstmp);
 	clock_t t0=clock();
 	int t_now;
 	//srand(time(NULL));
@@ -112,10 +115,10 @@ vector3* values=(vector3*)cudaMallocManage(sizeof(vector3)*NUMENTITIES*NUMENTITI
 	#ifdef DEBUG
 	printSystem(stdout);
 	#endif
-	cudaMallocManaged(&values, sizeof(vector3)*NUMENTITIES*NUMENTITIES);
-       cudaMallocManaged(&accels,sizeof(vector3*)*NUMENTITIES);
-        for (i=0;i<NUMENTITIES;i++)
-                accels[i]=&values[i*NUMENTITIES];
+	//cudaMallocManaged(&values, sizeof(vector3)*NUMENTITIES*NUMENTITIES);
+       //cudaMallocManaged(&accels,sizeof(vector3*)*NUMENTITIES);
+        //for (i=0;i<NUMENTITIES;i++)
+        //        accels[i]=&values[i*NUMENTITIES];
 	for (t_now=0;t_now<DURATION;t_now+=INTERVAL){
 		compute();
 	}
