@@ -35,9 +35,9 @@ void initHostMemory(int numObjects)
 //Side Effects: Frees the memory allocated to global variables hVel, hPos, and mass.
 void freeHostMemory()
 {
-	free(hVel);
-	free(hPos);
-	free(mass);
+	cudaFree(hVel);
+	cudaFree(hPos);
+	cudaFree(mass);
 }
 
 //planetFill: Fill the first NUMPLANETS+1 entries of the entity arrays with an estimation
@@ -98,12 +98,18 @@ void printSystem(FILE* handle){
 int main(int argc, char **argv)
 {
 	cudaMallocManaged(&values,sizeof(vector3)*NUMENTITIES*NUMENTITIES);
-        vector3** accelstmp=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
-        for (int i=0;i<NUMENTITIES;i++)
-                accelstmp[i]=&values[i*NUMENTITIES];
+	vector3** accelstmp=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
+	for (int i=0;i<NUMENTITIES;i++)
+	cudaMalloc(&accelstmp[i],sizeof(vector3)*NUMENTITIES);
 	cudaMalloc(&accels,sizeof(vector3*)*NUMENTITIES);
-	cudaMemcpy(&accels,accelstmp,sizeof(vector3*)*NUMENTITIES,cudaMemcpyHostToDevice);
+	cudaMemcpy(accels,accelstmp,sizeof(vector3*)*NUMENTITIES,cudaMemcpyHostToDevice);
 	free(accelstmp);
+  //      vector3** accelstmp=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
+//        for (int i=0;i<NUMENTITIES;i++)
+    //            accelstmp[i]=&values[i*NUMENTITIES];
+//	cudaMalloc(&accels,sizeof(vector3*)*NUMENTITIES);
+//	cudaMemcpy(&accels,accelstmp,sizeof(vector3*)*NUMENTITIES,cudaMemcpyHostToDevice);
+//	free(accelstmp);
 	clock_t t0=clock();
 	int t_now;
 	//srand(time(NULL));
@@ -128,6 +134,14 @@ int main(int argc, char **argv)
 #endif
 	printf("This took a total time of %f seconds\n",(double)t1/CLOCKS_PER_SEC);
 	cudaFree(values);
+	vector3** accelstmp=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
+	cudaMemcpy(t_accels, accels, sizeof(vector3*)*NUMENTITIES, cudaMemcpyDeviceToHost);
+	int i;
+	//free device acceleration matrix
+	for (i=0;i<NUMENTITIES;i++){
+	cudaFree(accelstmp[i]);
+}
+	free(accelstmp);                   
 	cudaFree(accels);
 	freeHostMemory();
 

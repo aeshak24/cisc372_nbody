@@ -68,12 +68,14 @@ __global__
 	int i= blockIdx.x* blockDim.x + threadIdx.x;
 	int j= blockIdx.y* blockDim.y + threadIdx.y;
 	int k= threadIdx.z;
-	if (i>NUMENTITIES || j>NUMENTITIES){
+	if (i>=NUMENTITIES || j>=NUMENTITIES){
 		return;
 	}
 	if (i==j){
-		accels[i][j][k]=0;
+		FILL_VECTOR(vals[(i * NUMENTITIES) + j], 0, 0, 0);
+	//	accels[i][j][k]=0;
 	}
+	else{
 	vector3 distance;
 	distance[k]= hPos[i][k]-hPos[j][k];
 	__syncthreads();
@@ -82,7 +84,7 @@ __global__
         double accelmag=-1*GRAV_CONSTANT*mass[j]/magnitude_sq;
 	accels[i][j][k]=accelmag*distance[0]/magnitude,accelmag*distance[1]/magnitude,accelmag*distance[2]/magnitude;
 	//sum up the rows of our matrix to get effect on each entity, then update velocity and position.
-}
+}}
 __global__
 	void sumcolumns(vector3 **accels, vector3 *hPos, vector3 *hVel){
 	int i=blockIdx.x;
