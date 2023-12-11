@@ -13,6 +13,7 @@ vector3 *hPos;//, *d_hPos;
 //vector3 *d_values, d_accels, *d_sum;
 //double *d_mass;
 double *mass;
+vector3 *t_accels;
 vector3 *values;
 vector3 **accels;
 //initHostMemory: Create storage for numObjects entities in our system
@@ -134,7 +135,7 @@ int main(int argc, char **argv)
 #endif
 	printf("This took a total time of %f seconds\n",(double)t1/CLOCKS_PER_SEC);
 	cudaFree(values);
-	vector3** accelstmp=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
+//	vector3** accelstmp=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
 	cudaMemcpy(t_accels, accels, sizeof(vector3*)*NUMENTITIES, cudaMemcpyDeviceToHost);
 	int i;
 	//free device acceleration matrix
