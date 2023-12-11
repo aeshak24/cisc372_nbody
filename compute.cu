@@ -65,7 +65,7 @@ void compute(){
 	
 	
 __global__
-	void add(vector3 **values,vector3 ** accels,vector3* hPos,double* mass){
+	void add(vector3 ** accels,vector3* hPos,double* mass){
 	int i= blockIdx.x* blockDim.x + threadIdx.x;
 	int j= blockIdx.y* blockDim.y + threadIdx.y;
 	int k= threadIdx.z;
@@ -73,8 +73,9 @@ __global__
 		return;
 	}
 	if (i==j){
-		FILL_VECTOR(values[(i * NUMENTITIES) + j], 0, 0, 0);
-	//	accels[i][j][k]=0;
+	//	FILL_VECTOR(values[(i * NUMENTITIES) + j], 0, 0, 0);
+		accels[i][j][k]=0;
+		return;
 	}
 	else{
 	vector3 distance;
