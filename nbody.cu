@@ -14,7 +14,7 @@ vector3 *hPos;//, *d_hPos;
 //double *d_mass;
 double *mass;
 //vector3 *t_accels;
-vector3 *values;
+//vector3 *values;
 vector3 **accels;
 //initHostMemory: Create storage for numObjects entities in our system
 //Parameters: numObjects: number of objects to allocate
@@ -98,10 +98,10 @@ void printSystem(FILE* handle){
 
 int main(int argc, char **argv)
 {
-	cudaMallocManaged(&values,sizeof(vector3)*NUMENTITIES*NUMENTITIES);
+	//cudaMallocManaged(&values,sizeof(vector3)*NUMENTITIES*NUMENTITIES);
 	vector3** accelstmp=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
 	for (int i=0;i<NUMENTITIES;i++)
-	cudaMalloc(&accelstmp[i],sizeof(vector3)*NUMENTITIES);
+		cudaMalloc(&accelstmp[i],sizeof(vector3)*NUMENTITIES);
 	cudaMalloc(&accels,sizeof(vector3*)*NUMENTITIES);
 	cudaMemcpy(accels,accelstmp,sizeof(vector3*)*NUMENTITIES,cudaMemcpyHostToDevice);
 	free(accelstmp);
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
 	printSystem(stdout);
 #endif
 	printf("This took a total time of %f seconds\n",(double)t1/CLOCKS_PER_SEC);
-	cudaFree(values);
+	//cudaFree(values);
 //	vector3** t_accels = (vector3**)malloc(sizeof(vector3*) * NUMENTITIES);
   //  cudaMemcpy(t_accels, accels, sizeof(vector3*) * NUMENTITIES, cudaMemcpyDeviceToHost);
 
@@ -146,13 +146,13 @@ int main(int argc, char **argv)
 //    free(t_accels);
   //  cudaFree(accels);
 
-//	vector3** accelstmp=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
+	accelstmp=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
 	//changed here
 	cudaMemcpy(accelstmp, accels, sizeof(vector3*)*NUMENTITIES, cudaMemcpyDeviceToHost);
 	int i;
 	//free device acceleration matrix
 	for (i=0;i<NUMENTITIES;i++){
-	cudaFree(accelstmp[i]);
+		cudaFree(accelstmp[i]);
 }
 	free(accelstmp);                   
 	cudaFree(accels);
